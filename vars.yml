@@ -1,0 +1,8 @@
+---
+creds_json: /home/jason/qwiklabs-gcp-essentials-ansible/creds.json
+service_account_email: "{{ (lookup('file', creds_json) | from_json).get('client_email') }}"
+credentials_file: "{{ creds_json }}"
+project_id: "{{ (lookup('file', creds_json) | from_json).get('project_id') }}"
+machine_type: n1-standard-1
+image: debian-9
+zone: us-central1-c

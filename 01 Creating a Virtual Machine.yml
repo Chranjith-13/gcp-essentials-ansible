@@ -1,0 +1,120 @@
+---
+- name: create cloud resources
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+
+  tasks:
+    - name: Launch instances
+      gce:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        instance_names: gcelab
+        num_instances: 1
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        zone: "{{ zone }}"
+      register: gce
+
+    - name: open port 80 in the firewall
+      gce_net:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        name: default
+        fwname: "http"
+        allowed: tcp:80
+        state: "present"
+
+    - name: wait for ssh
+      wait_for:
+        delay: 1
+        host: "{{ item.public_ip }}"
+        port: 22
+        state: started
+        timeout: 30
+      with_items: "{{ gce.instance_data }}"
+
+    - name: make host group
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: gcelab
+      with_items: "{{ gce.instance_data }}"
+
+- name: configure instance OS
+  hosts: gcelab
+  become: yes
+  remote_user: jason
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+  tasks:
+    - name: install nginx
+      apt:
+        update_cache: yes
+        name: nginx
+        state: present
+
+- name: get nginx output
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  tasks:
+    - name: get nginx url
+      command: "curl http://{{ groups.gcelab[0] }}"
+      register: curl
+    - name: display nginx output
+      debug: var=curl.stdout_lines
+
+- name: create a new instance
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+
+  tasks:
+    - name: Launch instances
+      gce:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        instance_names: gcelab2
+        num_instances: 1
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        zone: "{{ zone }}"
+      register: gce2
+
+    - name: update host group
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: gcelab2
+      with_items: "{{ gce2.instance_data }}"
+
+- name: cleanup instances
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+
+  tasks:
+    - name: Terminate instances
+      gce:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        instance_names: "{{ item }}"
+        zone: "{{ zone }}"
+        state: absent
+      with_items:
+        - gcelab
+        - gcelab2
