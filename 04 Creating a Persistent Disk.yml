@@ -1,0 +1,114 @@
+---
+- name: create cloud resources
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+  tasks:
+    - name: Launch instances
+      gce:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        instance_names: gcelab
+        num_instances: 1
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        zone: "{{ zone }}"
+      register: gce
+
+    # - name: open port 80 in the firewall
+    #   gce_net:
+    #     service_account_email: "{{ service_account_email }}"
+    #     credentials_file: "{{ credentials_file }}"
+    #     project_id: "{{ project_id }}"
+    #     name: default
+    #     fwname: "http"
+    #     allowed: tcp:80
+    #     state: "present"
+
+    - name: wait for ssh
+      wait_for:
+        delay: 1
+        host: "{{ item.public_ip }}"
+        port: 22
+        state: started
+        timeout: 30
+      with_items: "{{ gce.instance_data }}"
+
+    - name: make host group
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: gcelab
+      with_items: "{{ gce.instance_data }}"
+
+    - name: create persistent disk
+      gce_pd:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        instance_name: gcelab
+        size_gb: 200
+        name: mydisk
+        mode: READ_WRITE
+        zone: "{{ zone }}"
+
+- name: configure instance OS
+  hosts: gcelab
+  become: yes
+  remote_user: jason
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+  tasks:
+    - name: make mountpoint
+      file:
+        path: /mnt/mydisk
+        state: directory
+
+    - name: make filesystem
+      filesystem:
+        fstype: ext4
+        dev: /dev/sdb
+        opts: "-F -E lazy_itable_init=0,lazy_journal_init=0,discard"
+
+    - name: mount disk
+      mount:
+        path: /mnt/mydisk
+        src: /dev/sdb
+        fstype: ext4
+        opts: defaults
+        state: mounted
+
+
+- name: cleanup instances and disks
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+
+  tasks:
+    - name: Terminate instances
+      gce:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        instance_names: "{{ item }}"
+        zone: "{{ zone }}"
+        state: absent
+      with_items:
+        - gcelab
+
+    - name: delete persistent disk
+      gce_pd:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        instance_name: gcelab
+        name: mydisk
+        zone: "{{ zone }}"
+        state: absent

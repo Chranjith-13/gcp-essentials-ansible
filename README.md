@@ -4,6 +4,10 @@ Ansible automation for the Qwiklabs GCE Essentials Quest
 ## Just for kicks
 This repo is intended to demonstrate the art of the possible with GCP and Ansible. Obviously, just running these playbooks defeats the purpose of the Qwiklabs training. So think of this automation as extra credit.
 
+## Incomplete
+
+The GCP Ansible modules are still in preview. This means the interfaces may change. Some endpoints are not yet automatable with Ansible, like Google Cloud Launcher. Those exercises are skipped here.
+
 ## Setting up your environment
 
 ### virtualenv
@@ -99,5 +103,6 @@ Don't forget to update your absolute paths. For example, this repo has lots of i
 
 ```
 ansible-playbook -i inventory/gce.py 01\ Creating\ a\ Virtual\ Machine.yml
-ansible-playbook 02\ Getting\ Stargetd\ with\ Cloud\ Shell\ \&\ gcloud.yml 
+ansible-playbook 02\ Getting\ Stargetd\ with\ Cloud\ Shell\ \&\ gcloud.yml
+ansible-playbook -i inventory/gce.py 04\ Creating\ a\ Persistent\ Disk.yml
 ```
