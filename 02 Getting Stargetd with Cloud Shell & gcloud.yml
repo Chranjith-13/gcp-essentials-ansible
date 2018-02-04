@@ -1,0 +1,24 @@
+---
+- name: execute Google Storage plays
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+  tasks:
+    - name: make bucket
+      gc_storage:
+        bucket: "{{ project_id }}"
+        mode: create
+        gs_access_key: "{{ gs_access_key }}"
+        gs_secret_key: "{{ gs_secret_key }}"
+
+    - name: put test.dat in new bucket
+      gc_storage:
+        bucket: "{{ project_id }}"
+        object: test.dat
+        src: "{{ test_dat }}"
+        mode: put
+        gs_access_key: "{{ gs_access_key }}"
+        gs_secret_key: "{{ gs_secret_key }}"

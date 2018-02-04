@@ -14,20 +14,20 @@ RHEL, CentOS:
 
 ```
 sudo su -
-yum install python-pip python-virtualenv
+yum install -y python-pip python-virtualenv
 virtualenv ENV
 source ENV/bin/activate
-pip install ansible apache-libcloud jmespath PyCrypto
+pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
 
 Fedora:
 
 ```
 sudo su -
-dnf install python-pip python2-virtualenv
+dnf install -y python-pip python2-virtualenv
 virtualenv ENV
 source ENV/bin/activate
-pip install ansible apache-libcloud jmespath PyCrypto
+pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
 
 Debian, Ubuntu:
@@ -38,7 +38,7 @@ apt-get update
 apt-get install -y python-virtualenv python-pip
 virtualenv ENV
 source ENV/bin/activate
-pip install ansible apache-libcloud jmespath PyCrypto
+pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
 
 ### GCP Service Account
@@ -72,6 +72,17 @@ ssh-agent bash
 ssh-add google_compute_engine
 ```
 
+### Create your Google Storage interoperable access keys
+
+In the GCP Console, go to Storage > Settings > Interoperability. Enable interoperable access and create new keys. Add them to ```gs_keys.json``` which is git ignored.
+
+```
+{
+ "gs_access_key": "foofoofoo",
+ "gs_secret_key": "barbarbar"
+}
+```
+
 ### Get the dynamic inventory script
 
 Download ```gce.py``` and ```gce.ini``` into your inventory directory.
@@ -88,4 +99,5 @@ Don't forget to update your absolute paths. For example, this repo has lots of i
 
 ```
 ansible-playbook -i inventory/gce.py 01\ Creating\ a\ Virtual\ Machine.yml
+ansible-playbook 02\ Getting\ Stargetd\ with\ Cloud\ Shell\ \&\ gcloud.yml 
 ```

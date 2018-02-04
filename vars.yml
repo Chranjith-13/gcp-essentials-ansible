@@ -1,8 +1,12 @@
 ---
 creds_json: /home/jason/qwiklabs-gcp-essentials-ansible/creds.json
+gs_keys_json: /home/jason/qwiklabs-gcp-essentials-ansible/gs_keys.json
 service_account_email: "{{ (lookup('file', creds_json) | from_json).get('client_email') }}"
 credentials_file: "{{ creds_json }}"
 project_id: "{{ (lookup('file', creds_json) | from_json).get('project_id') }}"
 machine_type: n1-standard-1
 image: debian-9
 zone: us-central1-c
+gs_access_key: "{{ (lookup('file', gs_keys_json) | from_json).get('gs_access_key') }}"
+gs_secret_key: "{{ (lookup('file', gs_keys_json) | from_json).get('gs_secret_key') }}"
+test_dat: /home/jason/qwiklabs-gcp-essentials-ansible/test.dat
