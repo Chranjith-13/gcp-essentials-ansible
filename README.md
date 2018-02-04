@@ -126,4 +126,5 @@ Don't forget to update your absolute paths. For example, this repo has lots of i
 ansible-playbook -i inventory/gce.py 01\ Creating\ a\ Virtual\ Machine.yml
 ansible-playbook 02\ Getting\ Stargetd\ with\ Cloud\ Shell\ \&\ gcloud.yml
 ansible-playbook -i inventory/gce.py 04\ Creating\ a\ Persistent\ Disk.yml
+ansible-playbook -i inventory/gce.py 05\ Hello\ Node\ Kubernetes.yml
 ```
