@@ -105,3 +105,8 @@ google_compute_engine
 inventory/
 gs_keys.json
 *.retry
+k8s_cluster_created
+hello-world.yml
+hello-node
+hello-nodev2
+hello-node-service

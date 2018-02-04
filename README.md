@@ -19,7 +19,7 @@ RHEL, CentOS:
 ```
 sudo su -
 yum install -y python-pip python-virtualenv
-virtualenv ENV
+virtualenv --system-site-packages ENV
 source ENV/bin/activate
 pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
@@ -29,7 +29,7 @@ Fedora:
 ```
 sudo su -
 dnf install -y python-pip python2-virtualenv
-virtualenv ENV
+virtualenv --system-site-packages ENV
 source ENV/bin/activate
 pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
@@ -40,7 +40,7 @@ Debian, Ubuntu:
 sudo su -
 apt-get update
 apt-get install -y python-virtualenv python-pip
-virtualenv ENV
+virtualenv --system-site-packages ENV
 source ENV/bin/activate
 pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
@@ -95,6 +95,27 @@ Download ```gce.py``` and ```gce.ini``` into your inventory directory.
 mkdir inventory
 curl -o inventory/gce.py https://raw.githubusercontent.com/ansible/ansible/stable-2.4/contrib/inventory/gce.py
 curl -o inventory/gce.ini https://raw.githubusercontent.com/ansible/ansible/stable-2.4/contrib/inventory/gce.ini
+```
+
+### Install gcloud SDK
+
+If you haven't already, install the gcloud SDK,  https://cloud.google.com/sdk/downloads, and run the initial set up:
+
+```
+source ~/.bashrc
+gcloud init
+```
+
+Select your project for this exercise and the appropriate zone, which in this quest is ```us-central1-c```.
+
+If you haven't configured non-root access to the Docker socket, then you'll have to ```glcoud init``` from root as well.
+
+Note: I also had to add a symlink to bin since the shell module doesn't source ```.bashrc```.
+
+```
+sudo su -
+cd /bin
+ln -s /home/jason/Downloads/google-cloud-sdk/bin/gcloud
 ```
 
 ## Running the playbooks
