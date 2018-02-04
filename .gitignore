@@ -110,3 +110,14 @@ hello-world.yml
 hello-node
 hello-nodev2
 hello-node-service
+nginx-pool
+nginx-group
+target-pools-*
+nginx-lb
+http-basic-check
+http-service
+nginx-backend
+nginx-backend-add
+web-map
+http-proxy
+forwarding-rule

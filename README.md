@@ -18,9 +18,7 @@ RHEL, CentOS:
 
 ```
 sudo su -
-yum install -y python-pip python-virtualenv
-virtualenv --system-site-packages ENV
-source ENV/bin/activate
+yum install -y python-pip
 pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
 
@@ -28,9 +26,7 @@ Fedora:
 
 ```
 sudo su -
-dnf install -y python-pip python2-virtualenv
-virtualenv --system-site-packages ENV
-source ENV/bin/activate
+dnf install -y python-pip
 pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
 
@@ -39,9 +35,7 @@ Debian, Ubuntu:
 ```
 sudo su -
 apt-get update
-apt-get install -y python-virtualenv python-pip
-virtualenv --system-site-packages ENV
-source ENV/bin/activate
+apt-get install -y python-pip
 pip install ansible apache-libcloud jmespath PyCrypto boto
 ```
 
