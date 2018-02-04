@@ -1,0 +1,96 @@
+---
+- name: create cloud resources
+  hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: no
+  vars_files:
+    - /home/jason/qwiklabs-gcp-essentials-ansible/vars.yml
+  tasks:
+    - name: build docker image
+      shell: "docker build -t gcr.io/{{ project_id }}/hello-node:v1 -f Dockerfile_05v1 ."
+
+    - name: push the image to the Google Cloud Registry
+      shell: "gcloud docker -- push gcr.io/{{ project_id }}/hello-node:v1"
+
+    - name: ensure project is set
+      shell: "gcloud config set project {{ project_id }}"
+
+    - name: get created clusters
+      shell: "gcloud container clusters describe hello-world --zone us-central1-f > hello-world.yml"
+      args:
+        creates: hello-world.yml
+      register: gcloud
+      ignore_errors: yes
+
+    - name: set cluster state to null
+      lineinfile:
+        line: "status: null"
+        path: hello-world.yml
+      when: gcloud.failed
+
+    - set_fact:
+        cluster: "{{ lookup('file', 'hello-world.yml') | from_yaml }}"
+
+    - name: create k8s cluster
+      shell: "gcloud container clusters create hello-world --num-nodes 2 --machine-type n1-standard-1 --zone us-central1-f"
+      args:
+        creates: k8s_cluster_created
+      when: cluster['status'] != "RUNNING"
+
+    - name: get k8s creds
+      shell: "gcloud container clusters get-credentials hello-world --zone us-central1-f"
+      args:
+        creates: ~/.kube/config
+
+    # brittle AF
+    - name: create pod
+      shell: "kubectl run hello-node --image=gcr.io/{{ project_id }}/hello-node:v1 "
+      args:
+        creates: hello-node
+
+    - name: expose pod
+      shell: "kubectl expose deployment hello-node --type='LoadBalancer' --port=8080"
+      args:
+        creates: hello-node-service
+
+    - pause: minutes=2
+
+    - name: get external ip
+      shell: "kubectl get services hello-node --no-headers=true | grep ^hello-node | awk '{print $3}'"
+      register: kubectl
+
+    - set_fact:
+        service_ip: "{{ kubectl['stdout_lines'][0] }}"
+
+    - name: get pod output
+      shell: "curl http://{{ service_ip }}:8080"
+      register: curl
+
+    - debug: var=curl.stdout_lines
+
+    - name: scale up service
+      shell: "kubectl scale deployment hello-node --replicas=4"
+
+    - name: copy server.js
+      copy:
+        src: server.js
+        dest: /home/jason/qwiklabs-gcp-essentials-ansible/server2.js
+
+    - name: update server2.js
+      lineinfile:
+        line: "response.end('Hello Kubernetes World!');"
+        path: /home/jason/qwiklabs-gcp-essentials-ansible/server2.js
+        insertafter: EOF
+
+    - name: build docker image
+      shell: "docker build -t gcr.io/{{ project_id }}/hello-node:v2 -f Dockerfile_05v2 ."
+
+    - name: push the new image to the Google Cloud Registry
+      shell: "gcloud docker -- push gcr.io/{{ project_id }}/hello-node:v2"
+
+    # can't get this part to work
+    # - name: update the deployment
+    #   shell: "kubectl edit deployment hello-node -f /home/jason/qwiklabs-gcp-essentials-ansible/hello-node.yml"
+    #   args:
+    #     creates: hello-nodev2

@@ -1,0 +1,47 @@
+{
+    "apiVersion": "extensions/v1beta1",
+    "kind": "Deployment",
+    "metadata": {
+        "namespace": "default"
+    },
+    "spec": {
+        "replicas": 4,
+        "selector": {
+            "matchLabels": {
+                "run": "hello-node"
+            }
+        },
+        "strategy": {
+            "rollingUpdate": {
+                "maxSurge": 1,
+                "maxUnavailable": 1
+            },
+            "type": "RollingUpdate"
+        },
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "run": "hello-node"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "gcr.io/valid-climber-194223/hello-node:v2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "hello-node",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File"
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "terminationGracePeriodSeconds": 30
+            }
+        }
+    }
+}
