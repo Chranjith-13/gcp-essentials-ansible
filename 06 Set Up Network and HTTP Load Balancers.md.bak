@@ -6,6 +6,7 @@ I tried to hack my way around it, and almost got there, but ran into a problem w
 
 For completeness, here's the partially successful playbook:
 
+```
 ---
 - name: create cloud resources
   hosts: localhost
@@ -143,3 +144,4 @@ For completeness, here's the partially successful playbook:
         creates: forwarding-rule
 
 # left off here
+```
